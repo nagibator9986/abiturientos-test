@@ -1,0 +1,144 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Дашборд{% endblock %}
+{% block heading %}Дашборд{% endblock %}
+{% block subheading %}Сводная статистика вступительного тестирования{% endblock %}
+
+{% set TONE = {
+  'emerald': 'bg-emerald-100 text-emerald-700',
+  'sky': 'bg-sky-100 text-sky-700',
+  'amber': 'bg-amber-100 text-amber-700',
+  'orange': 'bg-orange-100 text-orange-700',
+  'rose': 'bg-rose-100 text-rose-700'
+} %}
+
+{% block toolbar %}
+  <a href="{{ url_for('admin.attempts') }}"
+     class="rounded-lg bg-brand-700 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-brand-800">Все результаты</a>
+{% endblock %}
+
+{% block content %}
+<!-- KPI -->
+<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  {% set kpis = [
+    ('Всего попыток', stats.total, 'из них ' ~ stats.in_progress ~ ' в процессе', 'brand'),
+    ('Завершено работ', stats.finished, 'сегодня: ' ~ stats.today, 'emerald'),
+    ('Средний результат', stats.avg_percent ~ ' %', 'по завершённым работам', 'sky'),
+    ('Преодолели порог', stats.passed, stats.pass_rate ~ ' % при пороге ' ~ stats.pass_percent ~ ' %', 'amber')
+  ] %}
+  {% for label, value, hint, color in kpis %}
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ label }}</p>
+      <p class="mt-2 text-3xl font-bold text-slate-900">{{ value }}</p>
+      <p class="mt-1 text-xs text-slate-400">{{ hint }}</p>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="mt-5 grid gap-5 xl:grid-cols-3">
+  <!-- Активность -->
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm xl:col-span-2">
+    <div class="flex items-baseline justify-between">
+      <h2 class="text-sm font-semibold text-slate-900">Активность за 14 дней</h2>
+      <span class="text-xs text-slate-400">попыток за неделю: {{ stats.week }}</span>
+    </div>
+    <div class="mt-5 flex items-end gap-1.5">
+      {% for day in stats.activity %}
+        <div class="group flex flex-1 flex-col items-center justify-end">
+          <span class="mb-1 text-[10px] font-medium text-slate-400 opacity-0 transition group-hover:opacity-100">{{ day.count }}</span>
+          {# высота в пикселях: процентная высота не разрешается внутри flex-колонки без явной высоты #}
+          <div class="w-full rounded-t-md {% if day.count %}bg-brand-500{% else %}bg-slate-200{% endif %} transition group-hover:bg-brand-700"
+               style="height: {{ [(day.ratio * 1.3)|round(0)|int, 4]|max }}px" title="{{ day.date.strftime('%d.%m') }}: {{ day.count }}"></div>
+          <span class="mt-1.5 text-[10px] text-slate-400">{{ day.date.strftime('%d.%m') }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Распределение -->
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <h2 class="text-sm font-semibold text-slate-900">Распределение результатов</h2>
+    <div class="mt-4 space-y-3">
+      {% for bucket in stats.distribution %}
+        <div>
+          <div class="flex justify-between text-xs text-slate-600">
+            <span>{{ bucket.label }}</span><span class="font-semibold text-slate-900">{{ bucket.count }}</span>
+          </div>
+          <div class="mt-1 h-2.5 overflow-hidden rounded-full bg-slate-100">
+            <div class="h-full rounded-full bg-brand-500" style="width: {{ bucket.ratio }}%"></div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <h3 class="mt-6 text-sm font-semibold text-slate-900">По вариантам</h3>
+    <div class="mt-3 space-y-2">
+      {% for row in stats.by_variant %}
+        <div class="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-sm">
+          <span class="font-medium text-slate-700">Вариант {{ row.variant.code }}</span>
+          <span class="text-xs text-slate-500">{{ row.count }} работ · средний {{ row.avg }} %</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="mt-5 grid gap-5 xl:grid-cols-2">
+  <!-- Последние попытки -->
+  <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-3.5">
+      <h2 class="text-sm font-semibold text-slate-900">Последние работы</h2>
+      <a href="{{ url_for('admin.attempts') }}" class="text-xs font-medium text-brand-700 hover:underline">Все →</a>
+    </div>
+    {% if stats.recent %}
+      <table class="w-full text-sm">
+        <tbody class="divide-y divide-slate-100">
+          {% for attempt in stats.recent %}
+            <tr class="transition hover:bg-slate-50">
+              <td class="px-5 py-2.5">
+                <a href="{{ url_for('admin.attempt_detail', public_id=attempt.public_id) }}"
+                   class="font-medium text-slate-900 hover:text-brand-700">{{ attempt.full_name }}</a>
+                <p class="text-xs text-slate-400">{{ attempt.started_at|dt }} · {{ attempt.variant.code }}</p>
+              </td>
+              <td class="px-5 py-2.5 text-right">
+                {% if attempt.status == 'in_progress' %}
+                  <span class="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-medium text-sky-700">в процессе</span>
+                {% else %}
+                  <span class="rounded-full px-2.5 py-1 text-xs font-semibold {{ TONE[attempt.percent|gcolor] }}">{{ attempt.percent|round(0)|int }} %</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="px-5 py-8 text-center text-sm text-slate-400">Пока нет ни одной попытки.</p>
+    {% endif %}
+  </div>
+
+  <!-- Сложные вопросы -->
+  <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div class="border-b border-slate-200 px-5 py-3.5">
+      <h2 class="text-sm font-semibold text-slate-900">Самые сложные вопросы</h2>
+      <p class="text-xs text-slate-400">доля верных ответов среди отвеченных</p>
+    </div>
+    {% if hardest %}
+      <ul class="divide-y divide-slate-100">
+        {% for row in hardest %}
+          <li class="flex items-center gap-3 px-5 py-2.5">
+            <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-slate-100 text-xs font-bold text-slate-600">
+              {{ row.question.position }}
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-sm text-slate-700">{{ row.question.prompt }}</span>
+              <span class="text-xs text-slate-400">Вариант {{ row.question.variant.code }} · ответов: {{ row.answered }}</span>
+            </span>
+            <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold {{ TONE[row.accuracy|gcolor] }}">{{ row.accuracy }} %</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="px-5 py-8 text-center text-sm text-slate-400">Недостаточно данных для анализа.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

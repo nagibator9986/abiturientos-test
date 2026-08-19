@@ -1,0 +1,118 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Настройки{% endblock %}
+{% block heading %}Настройки{% endblock %}
+{% block subheading %}Параметры тестирования и учётная запись администратора{% endblock %}
+
+{% block content %}
+<div class="grid gap-5 lg:grid-cols-2">
+
+  <form method="post" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="_settings_form" value="1">
+    <h2 class="text-base font-semibold text-slate-900">Параметры тестирования</h2>
+    <p class="mt-1 text-xs text-slate-500">Изменения применяются к новым попыткам.</p>
+
+    <div class="mt-5 space-y-4">
+      <div>
+        <label for="institution_name" class="block text-sm font-medium text-slate-700">Название учебного заведения</label>
+        <input id="institution_name" name="institution_name" value="{{ values.institution_name }}"
+               class="mt-1.5 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+      </div>
+      <div>
+        <label for="test_title" class="block text-sm font-medium text-slate-700">Заголовок теста</label>
+        <input id="test_title" name="test_title" value="{{ values.test_title }}"
+               class="mt-1.5 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+      </div>
+      <div>
+        <label for="timezone" class="block text-sm font-medium text-slate-700">Часовой пояс</label>
+        <select id="timezone" name="timezone"
+                class="mt-1.5 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+          {% for zone in timezones %}
+            <option value="{{ zone }}" {% if values.timezone == zone %}selected{% endif %}>{{ zone }}</option>
+          {% endfor %}
+        </select>
+        <p class="mt-1 text-xs text-slate-400">В базе время хранится в UTC, а показывается и фильтруется в этом поясе.</p>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label for="duration_minutes" class="block text-sm font-medium text-slate-700">Длительность, мин</label>
+          <input id="duration_minutes" name="duration_minutes" type="number" min="1" max="600" value="{{ values.duration_minutes }}"
+                 class="mt-1.5 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+        </div>
+        <div>
+          <label for="pass_percent" class="block text-sm font-medium text-slate-700">Проходной балл, %</label>
+          <input id="pass_percent" name="pass_percent" type="number" min="0" max="100" value="{{ values.pass_percent }}"
+                 class="mt-1.5 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+        </div>
+      </div>
+
+      {% set toggles = [
+        ('show_score_to_student', 'Показывать абитуриенту его результат', 'Если выключено — абитуриент видит только подтверждение сдачи.'),
+        ('show_review_to_student', 'Показывать разбор ответов', 'Раскрывает правильные ответы — включайте только после экзамена.'),
+        ('allow_multiple_attempts', 'Разрешить повторные попытки', 'Запрет блокирует второй запуск того же варианта по совпадению ФИО.')
+      ] %}
+      {% for key, label, hint in toggles %}
+        <label class="flex cursor-pointer items-start gap-3 rounded-xl bg-slate-50 p-4">
+          <input type="checkbox" name="{{ key }}" {% if values[key] == '1' %}checked{% endif %}
+                 class="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+          <span class="text-sm">
+            <span class="block font-medium text-slate-800">{{ label }}</span>
+            <span class="block text-xs text-slate-500">{{ hint }}</span>
+          </span>
+        </label>
+      {% endfor %}
+    </div>
+
+    <button class="mt-6 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800">
+      Сохранить настройки
+    </button>
+  </form>
+
+  <div class="space-y-5">
+    <form method="post" action="{{ url_for('admin.change_password') }}" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <h2 class="text-base font-semibold text-slate-900">Смена пароля</h2>
+      <p class="mt-1 text-xs text-slate-500">Учётная запись: <b>{{ admin.username }}</b></p>
+
+      <div class="mt-5 space-y-4">
+        <div>
+          <label for="current_password" class="block text-sm font-medium text-slate-700">Текущий пароль</label>
+          <input id="current_password" name="current_password" type="password" required autocomplete="current-password"
+                 class="mt-1.5 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+        </div>
+        <div>
+          <label for="new_password" class="block text-sm font-medium text-slate-700">Новый пароль</label>
+          <input id="new_password" name="new_password" type="password" required minlength="8" autocomplete="new-password"
+                 class="mt-1.5 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+          <p class="mt-1 text-xs text-slate-400">Минимум 8 символов.</p>
+        </div>
+        <div>
+          <label for="repeat_password" class="block text-sm font-medium text-slate-700">Повторите пароль</label>
+          <input id="repeat_password" name="repeat_password" type="password" required minlength="8" autocomplete="new-password"
+                 class="mt-1.5 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+        </div>
+      </div>
+      <button class="mt-6 rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+        Обновить пароль
+      </button>
+    </form>
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="text-base font-semibold text-slate-900">Шкала оценивания</h2>
+      <table class="mt-3 w-full text-sm">
+        <tbody class="divide-y divide-slate-100">
+          {% set scale = [('90–100 %','Отлично','C1'),('75–89 %','Хорошо','B2'),('60–74 %','Удовлетворительно','B1'),('40–59 %','Ниже среднего','A2'),('0–39 %','Неудовлетворительно','A1')] %}
+          {% for range_label, grade, level in scale %}
+            <tr>
+              <td class="py-2 text-slate-500">{{ range_label }}</td>
+              <td class="py-2 font-medium text-slate-800">{{ grade }}</td>
+              <td class="py-2 text-right text-slate-500">CEFR {{ level }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

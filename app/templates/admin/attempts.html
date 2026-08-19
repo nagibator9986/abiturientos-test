@@ -1,0 +1,225 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Результаты{% endblock %}
+{% block heading %}Результаты тестирования{% endblock %}
+{% block subheading %}Поиск, фильтрация и выгрузка работ абитуриентов{% endblock %}
+
+{% set TONE = {
+  'emerald': 'bg-emerald-100 text-emerald-700',
+  'sky': 'bg-sky-100 text-sky-700',
+  'amber': 'bg-amber-100 text-amber-700',
+  'orange': 'bg-orange-100 text-orange-700',
+  'rose': 'bg-rose-100 text-rose-700'
+} %}
+{% set STATUS = {
+  'submitted': ('Завершён', 'bg-emerald-100 text-emerald-700'),
+  'expired': ('Время истекло', 'bg-amber-100 text-amber-700'),
+  'in_progress': ('В процессе', 'bg-sky-100 text-sky-700')
+} %}
+
+{% macro sort_link(key, label, align='left') %}
+  {% set args = dict(link_args) %}
+  {% set _ = args.update({'sort': key, 'order': 'asc' if (filters.sort == key and filters.order == 'desc') else 'desc', 'page': 1}) %}
+  <a href="{{ url_for('admin.attempts', **args) }}"
+     class="inline-flex items-center gap-1 transition hover:text-brand-700 {% if filters.sort == key %}text-brand-700{% endif %}">
+    {{ label }}
+    <span class="text-[9px]">{% if filters.sort == key %}{{ '▼' if filters.order == 'desc' else '▲' }}{% else %}⇅{% endif %}</span>
+  </a>
+{% endmacro %}
+
+{% block toolbar %}
+  <a href="{{ url_for('admin.export_csv', **link_args) }}"
+     class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50">
+    Экспорт в CSV
+  </a>
+{% endblock %}
+
+{% block content %}
+<!-- Панель поиска -->
+<form method="get" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+  <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
+    <div class="flex-1">
+      <label for="q" class="block text-xs font-medium text-slate-600">Поиск</label>
+      <div class="relative mt-1">
+        <span class="pointer-events-none absolute inset-y-0 left-3 grid place-items-center text-slate-400">⌕</span>
+        <input id="q" name="q" type="search" value="{{ filters.q }}"
+               placeholder="ФИО, телефон, e-mail, школа или ID попытки"
+               class="w-full rounded-xl border border-slate-300 py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+      </div>
+    </div>
+
+    <div>
+      <label for="variant" class="block text-xs font-medium text-slate-600">Вариант</label>
+      <select id="variant" name="variant"
+              class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100 lg:w-36">
+        <option value="">Все</option>
+        {% for variant in variants %}
+          <option value="{{ variant.id }}" {% if filters.variant == variant.id|string %}selected{% endif %}>{{ variant.code }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label for="status" class="block text-xs font-medium text-slate-600">Статус</label>
+      <select id="status" name="status"
+              class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100 lg:w-44">
+        <option value="">Любой</option>
+        <option value="finished" {% if filters.status == 'finished' %}selected{% endif %}>Все завершённые</option>
+        <option value="submitted" {% if filters.status == 'submitted' %}selected{% endif %}>Завершён</option>
+        <option value="expired" {% if filters.status == 'expired' %}selected{% endif %}>Время истекло</option>
+        <option value="in_progress" {% if filters.status == 'in_progress' %}selected{% endif %}>В процессе</option>
+      </select>
+    </div>
+
+    <button type="submit"
+            class="rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800">
+      Найти
+    </button>
+  </div>
+
+  <details class="mt-3" {% if filters.date_from or filters.date_to or filters.min_percent or filters.max_percent %}open{% endif %}>
+    <summary class="cursor-pointer select-none text-xs font-medium text-slate-500 hover:text-brand-700">Дополнительные фильтры</summary>
+    <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div>
+        <label for="date_from" class="block text-xs font-medium text-slate-600">Дата с</label>
+        <input id="date_from" name="date_from" type="date" value="{{ filters.date_from }}"
+               class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+      </div>
+      <div>
+        <label for="date_to" class="block text-xs font-medium text-slate-600">Дата по</label>
+        <input id="date_to" name="date_to" type="date" value="{{ filters.date_to }}"
+               class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+      </div>
+      <div>
+        <label for="min_percent" class="block text-xs font-medium text-slate-600">Результат от, %</label>
+        <input id="min_percent" name="min_percent" type="number" min="0" max="100" step="1" value="{{ filters.min_percent }}"
+               class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+      </div>
+      <div>
+        <label for="max_percent" class="block text-xs font-medium text-slate-600">Результат до, %</label>
+        <input id="max_percent" name="max_percent" type="number" min="0" max="100" step="1" value="{{ filters.max_percent }}"
+               class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+      </div>
+      <div>
+        <label for="per_page" class="block text-xs font-medium text-slate-600">Строк на странице</label>
+        <select id="per_page" name="per_page"
+                class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+          {% for choice in per_page_choices %}
+            <option value="{{ choice }}" {% if per_page == choice %}selected{% endif %}>{{ choice }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <input type="hidden" name="sort" value="{{ filters.sort }}">
+    <input type="hidden" name="order" value="{{ filters.order }}">
+  </details>
+</form>
+
+<!-- Сводка -->
+<div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-500">
+  <span>Найдено: <b class="text-slate-900">{{ summary.count }}</b></span>
+  <span>Завершено: <b class="text-slate-900">{{ summary.finished }}</b></span>
+  <span>Средний результат: <b class="text-slate-900">{{ summary.avg }} %</b></span>
+  <span>Лучший: <b class="text-slate-900">{{ summary.best }} %</b></span>
+  {% if filters.q or filters.variant or filters.status or filters.date_from or filters.date_to or filters.min_percent or filters.max_percent %}
+    <a href="{{ url_for('admin.attempts') }}" class="ml-auto font-medium text-brand-700 hover:underline">Сбросить фильтры ✕</a>
+  {% endif %}
+</div>
+
+<!-- Таблица -->
+<div class="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[880px] text-sm">
+      <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-4 py-3 text-left font-semibold">{{ sort_link('name', 'Абитуриент') }}</th>
+          <th class="px-4 py-3 text-left font-semibold">Контакты</th>
+          <th class="px-4 py-3 text-left font-semibold">{{ sort_link('variant', 'Вариант') }}</th>
+          <th class="px-4 py-3 text-left font-semibold">{{ sort_link('date', 'Начало') }}</th>
+          <th class="px-4 py-3 text-left font-semibold">{{ sort_link('duration', 'Время') }}</th>
+          <th class="px-4 py-3 text-left font-semibold">{{ sort_link('correct', 'Баллы') }}</th>
+          <th class="px-4 py-3 text-left font-semibold">{{ sort_link('percent', 'Результат') }}</th>
+          <th class="px-4 py-3 text-left font-semibold">{{ sort_link('status', 'Статус') }}</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for attempt in items %}
+          <tr class="transition hover:bg-slate-50/80">
+            <td class="px-4 py-3">
+              <a href="{{ url_for('admin.attempt_detail', public_id=attempt.public_id) }}"
+                 class="font-medium text-slate-900 hover:text-brand-700">{{ attempt.full_name }}</a>
+              {% if attempt.school %}<p class="text-xs text-slate-400">{{ attempt.school }}</p>{% endif %}
+            </td>
+            <td class="px-4 py-3 text-xs text-slate-500">
+              {% if attempt.phone %}<p>{{ attempt.phone }}</p>{% endif %}
+              {% if attempt.email %}<p class="text-slate-400">{{ attempt.email }}</p>{% endif %}
+              {% if not attempt.phone and not attempt.email %}<span class="text-slate-300">—</span>{% endif %}
+            </td>
+            <td class="px-4 py-3">
+              <span class="rounded-lg bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">{{ attempt.variant.code }}</span>
+            </td>
+            <td class="px-4 py-3 text-xs text-slate-600">{{ attempt.started_at|dt }}</td>
+            <td class="px-4 py-3 text-xs text-slate-600">{{ attempt.duration_seconds|duration }}</td>
+            <td class="px-4 py-3 text-xs text-slate-600">
+              {% if attempt.status == 'in_progress' %}
+                <span class="text-slate-300">—</span>
+              {% else %}
+                <b class="text-slate-900">{{ attempt.correct_count }}</b> / {{ attempt.total_questions }}
+              {% endif %}
+            </td>
+            <td class="px-4 py-3">
+              {% if attempt.status == 'in_progress' %}
+                <span class="text-slate-300">—</span>
+              {% else %}
+                <span class="rounded-full px-2.5 py-1 text-xs font-semibold {{ TONE[attempt.percent|gcolor] }}">{{ attempt.percent|round(0)|int }} %</span>
+                <span class="ml-1 text-xs text-slate-400">{{ attempt.level }}</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-3">
+              {% set label, cls = STATUS.get(attempt.status, (attempt.status, 'bg-slate-100 text-slate-600')) %}
+              <span class="rounded-full px-2.5 py-1 text-xs font-medium {{ cls }}">{{ label }}</span>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <a href="{{ url_for('admin.attempt_detail', public_id=attempt.public_id) }}"
+                 class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 transition hover:border-brand-400 hover:text-brand-700">Открыть</a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="9" class="px-4 py-16 text-center">
+              <p class="text-sm font-medium text-slate-500">Ничего не найдено</p>
+              <p class="mt-1 text-xs text-slate-400">Измените условия поиска или сбросьте фильтры.</p>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagination.pages > 1 %}
+    {% set page_args = dict(link_args) %}
+    <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 text-sm">
+      <span class="text-xs text-slate-500">
+        Страница {{ pagination.page }} из {{ pagination.pages }} · всего {{ pagination.total }} записей
+      </span>
+      <div class="flex flex-wrap items-center gap-1">
+        {% set _ = page_args.update({'page': pagination.prev_num or 1}) %}
+        <a href="{{ url_for('admin.attempts', **page_args) }}"
+           class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs {% if not pagination.has_prev %}pointer-events-none text-slate-300{% else %}text-slate-600 hover:border-brand-400 hover:text-brand-700{% endif %}">←</a>
+        {% for page_num in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+          {% if page_num %}
+            {% set _ = page_args.update({'page': page_num}) %}
+            <a href="{{ url_for('admin.attempts', **page_args) }}"
+               class="rounded-lg border px-3 py-1.5 text-xs {% if page_num == pagination.page %}border-brand-600 bg-brand-600 font-semibold text-white{% else %}border-slate-200 text-slate-600 hover:border-brand-400 hover:text-brand-700{% endif %}">{{ page_num }}</a>
+          {% else %}
+            <span class="px-1.5 text-xs text-slate-400">…</span>
+          {% endif %}
+        {% endfor %}
+        {% set _ = page_args.update({'page': pagination.next_num or pagination.pages}) %}
+        <a href="{{ url_for('admin.attempts', **page_args) }}"
+           class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs {% if not pagination.has_next %}pointer-events-none text-slate-300{% else %}text-slate-600 hover:border-brand-400 hover:text-brand-700{% endif %}">→</a>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

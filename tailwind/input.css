@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  body {
+    text-rendering: optimizeLegibility;
+  }
+  /* аккуратные скроллбары в таблицах админки */
+  ::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-slate-300;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+}
+
+@layer components {
+  /* отвеченный вопрос в навигаторе теста */
+  .nav-answered {
+    /* «!» обязательно: слой utilities идёт после components и иначе перебивает цвет текста */
+    @apply !border-brand-600 !bg-brand-600 !text-white hover:!border-brand-700;
+  }
+}
+
+@media print {
+  header,
+  footer,
+  aside,
+  form[method="post"],
+  button {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .shadow-sm,
+  .shadow-xl {
+    box-shadow: none !important;
+  }
+}

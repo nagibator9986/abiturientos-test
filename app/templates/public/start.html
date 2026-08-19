@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Начало тестирования — {{ settings.institution_name }}{% endblock %}
+
+{% block content %}
+<section class="border-b border-slate-200 bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700">
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+    <p class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-brand-100 ring-1 ring-inset ring-white/20">
+      English Entrance Test · {{ current_year }}
+    </p>
+    <h1 class="mt-5 max-w-3xl text-3xl font-bold leading-tight text-white sm:text-4xl">
+      {{ settings.test_title }}
+    </h1>
+    <p class="mt-4 max-w-2xl text-base leading-relaxed text-brand-100">
+      Онлайн-тестирование для абитуриентов {{ settings.institution_name }}. Результат подсчитывается автоматически
+      и сохраняется в базе приёмной комиссии сразу после завершения работы.
+    </p>
+    <dl class="mt-8 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-4">
+      <div class="rounded-xl bg-white/10 p-4 ring-1 ring-inset ring-white/15">
+        <dt class="text-xs uppercase tracking-wide text-brand-200">Время</dt>
+        <dd class="mt-1 text-xl font-semibold text-white">{{ duration }} мин</dd>
+      </div>
+      <div class="rounded-xl bg-white/10 p-4 ring-1 ring-inset ring-white/15">
+        <dt class="text-xs uppercase tracking-wide text-brand-200">Вариантов</dt>
+        <dd class="mt-1 text-xl font-semibold text-white">{{ variants|length }}</dd>
+      </div>
+      <div class="rounded-xl bg-white/10 p-4 ring-1 ring-inset ring-white/15">
+        <dt class="text-xs uppercase tracking-wide text-brand-200">Вопросов</dt>
+        <dd class="mt-1 text-xl font-semibold text-white">
+          {{ variants|map(attribute='question_count')|list|join(' / ') if variants else '—' }}
+        </dd>
+      </div>
+      <div class="rounded-xl bg-white/10 p-4 ring-1 ring-inset ring-white/15">
+        <dt class="text-xs uppercase tracking-wide text-brand-200">Формат</dt>
+        <dd class="mt-1 text-xl font-semibold text-white">Тест</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+
+  <!-- Форма регистрации -->
+  <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <h2 class="text-xl font-semibold text-slate-900">Регистрация абитуриента</h2>
+    <p class="mt-1 text-sm text-slate-500">
+      Заполните данные — они будут указаны в ведомости приёмной комиссии. Поля со звёздочкой обязательны.
+    </p>
+
+    {% if not variants %}
+      <div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        Сейчас нет доступных вариантов теста. Обратитесь в приёмную комиссию.
+      </div>
+    {% else %}
+    <form method="post" action="{{ url_for('public.start') }}" class="mt-6 space-y-5" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div>
+        <label for="full_name" class="block text-sm font-medium text-slate-700">
+          ФИО <span class="text-rose-500">*</span>
+        </label>
+        <input id="full_name" name="full_name" type="text" required autofocus autocomplete="name"
+               value="{{ form.get('full_name', '') }}"
+               placeholder="Например: Иванов Иван Иванович"
+               class="mt-1.5 block w-full rounded-xl border px-4 py-3 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:ring-4
+                      {% if errors.get('full_name') %}border-rose-300 bg-rose-50 focus:border-rose-400 focus:ring-rose-100{% else %}border-slate-300 focus:border-brand-500 focus:ring-brand-100{% endif %}">
+        {% if errors.get('full_name') %}
+          <p class="mt-1.5 text-sm text-rose-600">{{ errors['full_name'] }}</p>
+        {% else %}
+          <p class="mt-1.5 text-xs text-slate-400">Фамилия, имя и отчество — как в удостоверении личности.</p>
+        {% endif %}
+      </div>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label for="phone" class="block text-sm font-medium text-slate-700">Телефон</label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel"
+                 value="{{ form.get('phone', '') }}" placeholder="+7 (7XX) XXX-XX-XX"
+                 class="mt-1.5 block w-full rounded-xl border px-4 py-3 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:ring-4
+                        {% if errors.get('phone') %}border-rose-300 bg-rose-50 focus:border-rose-400 focus:ring-rose-100{% else %}border-slate-300 focus:border-brand-500 focus:ring-brand-100{% endif %}">
+          {% if errors.get('phone') %}<p class="mt-1.5 text-sm text-rose-600">{{ errors['phone'] }}</p>{% endif %}
+        </div>
+        <div>
+          <label for="email" class="block text-sm font-medium text-slate-700">E-mail</label>
+          <input id="email" name="email" type="email" autocomplete="email"
+                 value="{{ form.get('email', '') }}" placeholder="name@example.com"
+                 class="mt-1.5 block w-full rounded-xl border px-4 py-3 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:ring-4
+                        {% if errors.get('email') %}border-rose-300 bg-rose-50 focus:border-rose-400 focus:ring-rose-100{% else %}border-slate-300 focus:border-brand-500 focus:ring-brand-100{% endif %}">
+          {% if errors.get('email') %}<p class="mt-1.5 text-sm text-rose-600">{{ errors['email'] }}</p>{% endif %}
+        </div>
+      </div>
+
+      <div>
+        <label for="school" class="block text-sm font-medium text-slate-700">Школа / колледж</label>
+        <input id="school" name="school" type="text" value="{{ form.get('school', '') }}"
+               placeholder="Например: СШ №25 г. Актау"
+               class="mt-1.5 block w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+      </div>
+
+      <fieldset>
+        <legend class="block text-sm font-medium text-slate-700">
+          Вариант теста <span class="text-rose-500">*</span>
+        </legend>
+        <div class="mt-2 grid gap-3 sm:grid-cols-2">
+          {% for variant in variants %}
+            <label class="group relative flex cursor-pointer flex-col rounded-xl border border-slate-300 bg-white p-4 shadow-sm transition hover:border-brand-400 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50 has-[:checked]:ring-2 has-[:checked]:ring-brand-100">
+              <input type="radio" name="variant_id" value="{{ variant.id }}" class="peer sr-only"
+                     {% if form.get('variant_id') == variant.id|string or (not form.get('variant_id') and loop.first) %}checked{% endif %}>
+              <span class="flex items-center justify-between">
+                <span class="text-base font-semibold text-slate-900">Вариант {{ variant.code }}</span>
+                <span class="grid h-5 w-5 place-items-center rounded-full border border-slate-300 text-[10px] text-transparent transition group-has-[:checked]:border-brand-600 group-has-[:checked]:bg-brand-600 group-has-[:checked]:text-white">✓</span>
+              </span>
+              <span class="mt-1 text-xs text-slate-500">{{ variant.question_count }} вопросов · {{ settings.duration_minutes }} мин</span>
+            </label>
+          {% endfor %}
+        </div>
+        {% if errors.get('variant_id') %}<p class="mt-1.5 text-sm text-rose-600">{{ errors['variant_id'] }}</p>{% endif %}
+      </fieldset>
+
+      <label class="flex items-start gap-3 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+        <input type="checkbox" required class="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+        <span>Подтверждаю достоверность указанных данных и согласен(на) на их обработку приёмной комиссией.</span>
+      </label>
+
+      <button type="submit"
+              class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-700 px-6 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-brand-800 focus:outline-none focus:ring-4 focus:ring-brand-200 sm:w-auto">
+        Начать тестирование →
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  <!-- Правила -->
+  <aside class="space-y-4">
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h3 class="text-base font-semibold text-slate-900">Как проходит тест</h3>
+      <ol class="mt-4 space-y-3 text-sm text-slate-600">
+        <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-800">1</span>
+          <span>Заполните ФИО и выберите вариант, назначенный приёмной комиссией.</span></li>
+        <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-800">2</span>
+          <span>На выполнение отводится <b class="text-slate-900">{{ duration }} минут</b>. Таймер запускается сразу.</span></li>
+        <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-800">3</span>
+          <span>Каждый ответ сохраняется автоматически — потеря связи не обнулит работу.</span></li>
+        <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-800">4</span>
+          <span>Ответы можно менять до нажатия кнопки «Завершить тест».</span></li>
+      </ol>
+    </div>
+    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+      <h3 class="text-base font-semibold text-amber-900">Важно</h3>
+      <ul class="mt-3 space-y-2 text-sm text-amber-800">
+        <li>• За каждый правильный ответ начисляется 1 балл, штрафов за ошибки нет.</li>
+        <li>• Проходной результат — от {{ settings.pass_percent }} %.</li>
+        <li>• Повторный запуск теста создаёт новую попытку в ведомости.</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+{% endblock %}

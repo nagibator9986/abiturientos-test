@@ -1,0 +1,160 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ attempt.full_name }}{% endblock %}
+{% block heading %}{{ attempt.full_name }}{% endblock %}
+{% block subheading %}Вариант {{ attempt.variant.code }} · {{ attempt.started_at|dt }} · ID {{ attempt.public_id }}{% endblock %}
+
+{% set TONE = {
+  'emerald': {'chip':'bg-emerald-100 text-emerald-700','bar':'bg-emerald-500'},
+  'sky': {'chip':'bg-sky-100 text-sky-700','bar':'bg-sky-500'},
+  'amber': {'chip':'bg-amber-100 text-amber-700','bar':'bg-amber-500'},
+  'orange': {'chip':'bg-orange-100 text-orange-700','bar':'bg-orange-500'},
+  'rose': {'chip':'bg-rose-100 text-rose-700','bar':'bg-rose-500'}
+} %}
+
+{% block toolbar %}
+  <a href="{{ url_for('admin.attempts') }}"
+     class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50">← К списку</a>
+  <button type="button" onclick="window.print()"
+          class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50">Печать</button>
+  <form method="post" action="{{ url_for('admin.attempt_delete', public_id=attempt.public_id) }}"
+        onsubmit="return confirm('Удалить эту попытку вместе с ответами? Действие необратимо.');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100">Удалить</button>
+  </form>
+{% endblock %}
+
+{% block content %}
+<div class="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
+
+  <!-- Карточка абитуриента -->
+  <div class="space-y-5">
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center gap-4">
+        {% set name_parts = (attempt.full_name or '').split() %}
+        <div class="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-brand-50 text-xl font-bold text-brand-700">
+          {{ name_parts[0][0] if name_parts else '—' }}{{ name_parts[1][0] if name_parts|length > 1 else '' }}
+        </div>
+        <div class="min-w-0">
+          <p class="truncate font-semibold text-slate-900">{{ attempt.full_name }}</p>
+          <p class="text-xs text-slate-500">{{ attempt.school or 'учебное заведение не указано' }}</p>
+        </div>
+      </div>
+
+      <dl class="mt-5 space-y-2.5 text-sm">
+        {% set fields = [
+          ('Телефон', attempt.phone or '—'),
+          ('E-mail', attempt.email or '—'),
+          ('Вариант', attempt.variant.code),
+          ('Начало', attempt.started_at|dt),
+          ('Завершение', attempt.finished_at|dt),
+          ('Затрачено', attempt.duration_seconds|duration),
+          ('IP-адрес', attempt.ip_address or '—')
+        ] %}
+        {% for label, value in fields %}
+          <div class="flex justify-between gap-3 border-b border-dashed border-slate-100 pb-2">
+            <dt class="text-slate-500">{{ label }}</dt>
+            <dd class="text-right font-medium text-slate-800">{{ value }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+    </div>
+
+    {% if not attempt.is_finished %}
+    <div class="rounded-2xl border border-sky-200 bg-sky-50 p-5 text-center shadow-sm">
+      <p class="text-xs uppercase tracking-wide text-sky-700">Работа выполняется</p>
+      <p class="mt-2 text-2xl font-bold text-sky-900">{{ attempt.answered_count }} из {{ attempt.total_questions }}</p>
+      <p class="mt-1 text-sm text-sky-700">вопросов отвечено; результат будет подсчитан после сдачи работы</p>
+      <p class="mt-2 text-xs text-sky-600">начало {{ attempt.started_at|dt }}{% if attempt.deadline_at %} · до {{ attempt.deadline_at|dt }}{% endif %}</p>
+    </div>
+    {% else %}
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm">
+      <p class="text-xs uppercase tracking-wide text-slate-500">Итоговый результат</p>
+      <p class="mt-2 text-5xl font-bold text-slate-900">{{ attempt.percent|round(0)|int }}<span class="text-2xl">%</span></p>
+      <p class="mt-1 text-sm text-slate-500">{{ attempt.correct_count }} из {{ attempt.total_questions }} баллов</p>
+      <div class="mt-3 flex items-center justify-center gap-2">
+        <span class="rounded-full px-3 py-1 text-xs font-semibold {{ TONE[color].chip }}">{{ grade }}</span>
+        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">CEFR {{ level }}</span>
+      </div>
+      <div class="mt-4 grid grid-cols-3 gap-2 text-xs">
+        <div class="rounded-lg bg-emerald-50 py-2"><p class="font-bold text-emerald-700">{{ attempt.correct_count }}</p><p class="text-emerald-600">верно</p></div>
+        <div class="rounded-lg bg-rose-50 py-2"><p class="font-bold text-rose-700">{{ attempt.wrong_count }}</p><p class="text-rose-600">ошибок</p></div>
+        <div class="rounded-lg bg-slate-100 py-2"><p class="font-bold text-slate-700">{{ attempt.unanswered_count }}</p><p class="text-slate-500">пропущено</p></div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if attempt.is_finished %}
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-sm font-semibold text-slate-900">По разделам</p>
+      <div class="mt-3 space-y-3">
+        {% for name, stats in section_stats.items() %}
+          <div>
+            <div class="flex justify-between text-xs text-slate-600">
+              <span>{{ name }}</span><span><b class="text-slate-900">{{ stats.correct }}</b>/{{ stats.total }} · {{ stats.percent }} %</span>
+            </div>
+            <div class="mt-1 h-2 overflow-hidden rounded-full bg-slate-100">
+              <div class="h-full rounded-full {{ TONE[stats.percent|gcolor].bar }}" style="width: {{ stats.percent }}%"></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Разбор ответов -->
+  <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div class="flex flex-wrap items-center gap-3 border-b border-slate-200 px-5 py-3.5">
+      <h2 class="text-sm font-semibold text-slate-900">Лист ответов</h2>
+      <div class="ml-auto flex items-center gap-3 text-xs text-slate-500">
+        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>верно</span>
+        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-rose-500"></span>ошибка</span>
+        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-slate-300"></span>без ответа</span>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[720px] text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="w-12 px-4 py-2.5 text-left font-semibold">№</th>
+            <th class="px-4 py-2.5 text-left font-semibold">Вопрос</th>
+            <th class="w-56 px-4 py-2.5 text-left font-semibold">Ответ абитуриента</th>
+            <th class="w-56 px-4 py-2.5 text-left font-semibold">Правильный ответ</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for row in rows %}
+            <tr class="align-top {% if row.is_correct %}bg-emerald-50/40{% elif row.given %}bg-rose-50/40{% endif %}">
+              <td class="px-4 py-3">
+                <span class="grid h-6 w-6 place-items-center rounded-md text-xs font-bold
+                             {% if row.is_correct %}bg-emerald-500 text-white{% elif row.given %}bg-rose-500 text-white{% else %}bg-slate-200 text-slate-600{% endif %}">
+                  {{ row.question.position }}
+                </span>
+              </td>
+              <td class="px-4 py-3">
+                <p class="text-slate-800">{{ row.question.prompt }}</p>
+                {% if row.question.passage %}
+                  <p class="mt-1 line-clamp-2 text-xs italic text-slate-400">{{ row.question.passage }}</p>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3 text-xs">
+                {% if row.given %}
+                  <b class="{% if row.is_correct %}text-emerald-700{% else %}text-rose-700{% endif %}">{{ row.given }}.</b>
+                  <span class="text-slate-600">{{ row.answer.option.text }}</span>
+                {% else %}
+                  <span class="text-slate-400">— нет ответа —</span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3 text-xs">
+                <b class="text-emerald-700">{{ row.correct }}.</b>
+                <span class="text-slate-600">{{ row.question.correct_option.text if row.question.correct_option }}</span>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

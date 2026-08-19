@@ -1,0 +1,86 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Банк вопросов{% endblock %}
+{% block heading %}Банк вопросов{% endblock %}
+{% block subheading %}Варианты, вопросы и эталонные ответы{% endblock %}
+
+{% block toolbar %}
+  <form method="post" action="{{ url_for('admin.regrade') }}"
+        onsubmit="return confirm('Пересчитать результаты всех завершённых работ по текущему ключу?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50">
+      Пересчитать результаты
+    </button>
+  </form>
+{% endblock %}
+
+{% block content %}
+{% set accuracy = {} %}
+{% for row in hardest %}{% set _ = accuracy.update({row.question.id: row}) %}{% endfor %}
+
+<div class="flex flex-wrap items-center gap-2">
+  {% for variant in variants %}
+    <a href="{{ url_for('admin.questions', variant=variant.id) }}"
+       class="rounded-xl border px-4 py-2 text-sm font-medium transition
+              {% if selected and selected.id == variant.id %}border-brand-600 bg-brand-600 text-white{% else %}border-slate-300 bg-white text-slate-700 hover:border-brand-400{% endif %}">
+      Вариант {{ variant.code }}
+      <span class="ml-1 text-xs opacity-70">{{ variant.question_count }}</span>
+    </a>
+  {% endfor %}
+</div>
+
+{% if selected %}
+  <div class="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="min-w-0">
+      <p class="font-semibold text-slate-900">{{ selected.title }}</p>
+      <p class="text-xs text-slate-500">{{ selected.description }}</p>
+    </div>
+    <div class="ml-auto flex items-center gap-3">
+      <span class="rounded-full px-3 py-1 text-xs font-medium
+                   {% if selected.is_active %}bg-emerald-100 text-emerald-700{% else %}bg-slate-200 text-slate-600{% endif %}">
+        {{ 'Доступен абитуриентам' if selected.is_active else 'Отключён' }}
+      </span>
+      <form method="post" action="{{ url_for('admin.variant_toggle', variant_id=selected.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50">
+          {{ 'Отключить' if selected.is_active else 'Включить' }}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="mt-4 space-y-3">
+    {% for question in selected.questions %}
+      <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex gap-3">
+          <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-slate-100 text-xs font-bold text-slate-600">{{ question.position }}</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="rounded-md bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700">{{ question.section }}</span>
+              {% if accuracy.get(question.id) %}
+                <span class="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
+                  верных ответов: {{ accuracy[question.id].accuracy }} % ({{ accuracy[question.id].answered }})
+                </span>
+              {% endif %}
+            </div>
+            {% if question.passage %}
+              <p class="mt-2 rounded-lg border-l-4 border-slate-200 bg-slate-50 px-3 py-2 text-xs italic text-slate-600">{{ question.passage }}</p>
+            {% endif %}
+            <p class="mt-2 text-sm font-medium text-slate-900">{{ question.prompt }}</p>
+            <div class="mt-2 grid gap-1.5 sm:grid-cols-2">
+              {% for option in question.options %}
+                <div class="flex items-start gap-2 rounded-lg px-2.5 py-1.5 text-xs
+                            {% if option.is_correct %}bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-200{% else %}text-slate-600{% endif %}">
+                  <b>{{ option.letter }}.</b><span>{{ option.text }}</span>
+                  {% if option.is_correct %}<span class="ml-auto text-emerald-600">✓</span>{% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="mt-6 text-sm text-slate-500">Банк вопросов пуст. Добавьте файлы в каталог <code>data/</code> и выполните <code>flask sync</code>.</p>
+{% endif %}
+{% endblock %}
