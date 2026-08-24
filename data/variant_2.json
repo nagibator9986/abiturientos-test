@@ -1,7 +1,7 @@
 {
   "code": "2-в",
   "title": "Entrance test 2-в",
-  "description": "Вступительный тест по английскому языку для абитуриентов Caspian College. Вариант 2-в, 50 вопросов.",
+  "description": "Вступительный тест по английскому языку для абитуриентов Caspian College. Вариант 2-в, 49 вопросов.",
   "duration_minutes": 60,
   "questions": [
     {
@@ -247,18 +247,6 @@
     {
       "n": 21,
       "section": "Grammar & Vocabulary",
-      "prompt": "You ________ better see a doctor.",
-      "options": {
-        "A": "Did",
-        "B": "Would",
-        "C": "Should",
-        "D": "Had"
-      },
-      "answer": "C"
-    },
-    {
-      "n": 22,
-      "section": "Grammar & Vocabulary",
       "prompt": "You should ________ swimming.",
       "options": {
         "A": "Start up",
@@ -269,7 +257,7 @@
       "answer": "C"
     },
     {
-      "n": 23,
+      "n": 22,
       "section": "Grammar & Vocabulary",
       "prompt": "'Did you speak to Juliet?' 'No, I've ________ seen her.'",
       "options": {
@@ -281,7 +269,7 @@
       "answer": "B"
     },
     {
-      "n": 24,
+      "n": 23,
       "section": "Grammar & Vocabulary",
       "prompt": "He told me that he ________ in Spain the previous year.",
       "options": {
@@ -293,7 +281,7 @@
       "answer": "B"
     },
     {
-      "n": 25,
+      "n": 24,
       "section": "Grammar & Vocabulary",
       "prompt": "She looks ________ she's going to be sick.",
       "options": {
@@ -305,7 +293,7 @@
       "answer": "A"
     },
     {
-      "n": 26,
+      "n": 25,
       "section": "Grammar & Vocabulary",
       "prompt": "The best way to learn a language is ________ a little every day.",
       "options": {
@@ -317,7 +305,7 @@
       "answer": "D"
     },
     {
-      "n": 27,
+      "n": 26,
       "section": "Grammar & Vocabulary",
       "prompt": "She ________ me to go to school.",
       "options": {
@@ -329,7 +317,7 @@
       "answer": "B"
     },
     {
-      "n": 28,
+      "n": 27,
       "section": "Grammar & Vocabulary",
       "prompt": "I want to be a teacher when I ________ .",
       "options": {
@@ -341,7 +329,7 @@
       "answer": "C"
     },
     {
-      "n": 29,
+      "n": 28,
       "section": "Grammar & Vocabulary",
       "prompt": "I'm fed up ________ this exercise.",
       "options": {
@@ -353,7 +341,7 @@
       "answer": "A"
     },
     {
-      "n": 30,
+      "n": 29,
       "section": "Reading & Comprehension",
       "instruction": "Read two sentences below and choose the best way of combining them.",
       "passage": "Lisa plays the piano. Her sister Kelly plays the piano too.",
@@ -367,7 +355,7 @@
       "answer": "B"
     },
     {
-      "n": 31,
+      "n": 30,
       "section": "Reading & Comprehension",
       "instruction": "Read two sentences below and choose the best way of combining them.",
       "passage": "Kazuko took her dog for a walk. They went to the park.",
@@ -381,7 +369,7 @@
       "answer": "B"
     },
     {
-      "n": 32,
+      "n": 31,
       "section": "Reading & Comprehension",
       "instruction": "Read two sentences below and choose the best way of combining them.",
       "passage": "We knew it might get chilly at the football game. We brought along some extra blankets.",
@@ -395,7 +383,7 @@
       "answer": "C"
     },
     {
-      "n": 33,
+      "n": 32,
       "section": "Reading & Comprehension",
       "instruction": "Read the sentence below, then choose the best answer to the question.",
       "passage": "Elena found a tomato that was much bigger than all the others in the garden.",
@@ -409,7 +397,7 @@
       "answer": "D"
     },
     {
-      "n": 34,
+      "n": 33,
       "section": "Reading & Comprehension",
       "instruction": "Read the sentence below, then choose the best answer to the question.",
       "passage": "When the popular entertainer canceled her appearance, the Latin American festival was postponed indefinitely.",
@@ -423,7 +411,7 @@
       "answer": "D"
     },
     {
-      "n": 35,
+      "n": 34,
       "section": "Reading & Comprehension",
       "instruction": "Read the sentence below, then choose the best answer to the question.",
       "passage": "Jasmine is never late to meet her friends and sometimes arrives a few minutes early.",
@@ -437,7 +425,7 @@
       "answer": "B"
     },
     {
-      "n": 36,
+      "n": 35,
       "section": "Reading & Comprehension",
       "instruction": "Read the sentence below, then choose the best answer to the question.",
       "passage": "Bram Stoker is best known for his classic horror novel Dracula, which was published in 1897.",
@@ -451,7 +439,7 @@
       "answer": "C"
     },
     {
-      "n": 37,
+      "n": 36,
       "section": "Reading & Comprehension",
       "instruction": "Read the sentence below, then choose the best answer to the question.",
       "passage": "Juanita rushed to her dance class and burst through the door in the nick of time.",
@@ -465,7 +453,7 @@
       "answer": "C"
     },
     {
-      "n": 38,
+      "n": 37,
       "section": "Reading & Comprehension",
       "instruction": "Choose the appropriate answer",
       "prompt": "_________ washing his sweater, Jacob hung it up to dry.",
@@ -478,7 +466,7 @@
       "answer": "A"
     },
     {
-      "n": 39,
+      "n": 38,
       "section": "Reading & Comprehension",
       "instruction": "Choose the appropriate answer",
       "prompt": "Jacques Cousteau will be remembered for his inventions and for __________ to marine science.",
@@ -491,7 +479,7 @@
       "answer": "B"
     },
     {
-      "n": 40,
+      "n": 39,
       "section": "Reading & Comprehension",
       "instruction": "Choose the appropriate answer",
       "prompt": "__________ you can speak more than one language, you have the opportunity to make more new friends.",
@@ -504,7 +492,7 @@
       "answer": "C"
     },
     {
-      "n": 41,
+      "n": 40,
       "section": "Reading & Comprehension",
       "instruction": "Read some texts and find the right answers",
       "passage": "Television has been introduced to almost every country in the world, reaching a large number of viewers on every continent. About 600 million people saw the first person walk on the moon, and a billion people watched the twentieth Olympic Games. Television has in many ways promoted understanding and cooperation among people. It does this by showing educational and cultural programs.",
@@ -518,7 +506,7 @@
       "answer": "C"
     },
     {
-      "n": 42,
+      "n": 41,
       "section": "Reading & Comprehension",
       "instruction": "Read some texts and find the right answers",
       "passage": "People have different ways of learning. Some are better at making mental pictures of new ideas. Others are more comfortable with writing lists of things to memorize. Certain people can learn best when listening to music, while others need silence to concentrate.",
@@ -532,7 +520,7 @@
       "answer": "D"
     },
     {
-      "n": 43,
+      "n": 42,
       "section": "Reading & Comprehension",
       "instruction": "Read some texts and find the right answers",
       "passage": "If you hold a piece of copper wire over the flame of a wooden match, heat will be conducted by the copper wire to your fingers, and you will be forced to drop the wire. You will, however, still be able to hold the match because wood is a poor conductor of heat.",
@@ -546,7 +534,7 @@
       "answer": "A"
     },
     {
-      "n": 44,
+      "n": 43,
       "section": "Reading & Comprehension",
       "instruction": "Read some texts and find the right answers",
       "passage": "Many people own different pets. Dogs, cats, birds, and fish are common household pets. Other pets are considered to be exotic animals. These include snakes, lizards, and hedgehogs.",
@@ -560,7 +548,7 @@
       "answer": "A"
     },
     {
-      "n": 45,
+      "n": 44,
       "section": "Reading & Comprehension",
       "instruction": "Read some texts and find the right answers",
       "passage": "Cesar Chavez was an influential leader for farmworkers. He fought for their rights and better working conditions. Chavez led many strikes that angered farm owners. Eventually he succeeded in getting increased wages and better living situations for farmworkers.",
@@ -574,7 +562,7 @@
       "answer": "D"
     },
     {
-      "n": 46,
+      "n": 45,
       "section": "Reading & Comprehension",
       "prompt": "Shikibu Murasaki, who wrote almost a thousand years ago, was one of the world’s __________ novelists.",
       "options": {
@@ -586,7 +574,7 @@
       "answer": "D"
     },
     {
-      "n": 47,
+      "n": 46,
       "section": "Reading & Comprehension",
       "prompt": "After we saw the play, we had different opinions __________ Vincent’s performance.",
       "options": {
@@ -598,7 +586,7 @@
       "answer": "A"
     },
     {
-      "n": 48,
+      "n": 47,
       "section": "Reading & Comprehension",
       "prompt": "Having recorded many of the most beloved songs of the 1940s, jazz singer Ella Fitzgerald __________ one of the most prominent musical performers of her time.",
       "options": {
@@ -610,7 +598,7 @@
       "answer": "C"
     },
     {
-      "n": 49,
+      "n": 48,
       "section": "Reading & Comprehension",
       "prompt": "Sonia is so determined and stubborn that she never __________ until she gets exactly what she wants.",
       "options": {
@@ -622,7 +610,7 @@
       "answer": "A"
     },
     {
-      "n": 50,
+      "n": 49,
       "section": "Reading & Comprehension",
       "prompt": "At only 43, John F. Kennedy was the __________ American president ever to be elected.",
       "options": {
