@@ -68,6 +68,9 @@
                   <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-slate-100 text-sm font-bold text-slate-600"
                         data-badge>{{ question.position }}</span>
                   <div class="min-w-0 flex-1">
+                    {% if question.instruction %}
+                      <p class="mb-2 text-sm font-semibold italic text-brand-700">{{ question.instruction }}</p>
+                    {% endif %}
                     {% if question.passage %}
                       <div class="mb-3 rounded-xl border-l-4 border-brand-200 bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-700">
                         {% for line in question.passage.split('\n') %}<p{% if not loop.first %} class="mt-2"{% endif %}>{{ line }}</p>{% endfor %}

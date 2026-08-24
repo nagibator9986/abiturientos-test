@@ -55,6 +55,7 @@ class Question(db.Model):
     variant_id = db.Column(db.Integer, db.ForeignKey("variants.id", ondelete="CASCADE"), nullable=False)
     position = db.Column(db.Integer, nullable=False)
     section = db.Column(db.String(120), nullable=False, default="")
+    instruction = db.Column(db.Text)     # описание задания («Choose the appropriate answer»)
     passage = db.Column(db.Text)
     prompt = db.Column(db.Text, nullable=False)
 

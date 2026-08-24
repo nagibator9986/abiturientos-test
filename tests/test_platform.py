@@ -75,11 +75,56 @@ def test_bank_loaded(app):
     with app.app_context():
         variants = Variant.query.order_by(Variant.code).all()
         assert [v.code for v in variants] == ["1-в", "2-в"]
-        assert [v.question_count for v in variants] == [50, 51]
+        assert [v.question_count for v in variants] == [50, 50]
         for variant in variants:
             for question in variant.questions:
                 assert len(question.options) >= 3
                 assert sum(1 for o in question.options if o.is_correct) == 1
+
+
+def test_instructions_are_loaded(app):
+    """Описания заданий («Choose the appropriate answer» и т. п.) попадают в банк."""
+    with app.app_context():
+        from app.models import Question
+
+        expected = {
+            ("1-в", 41): "Read the sentence below, then choose the best answer to the question.",
+            ("1-в", 46): "Choose the appropriate answer",
+            ("1-в", 31): "Read some texts and find the right answers",
+            ("1-в", 49): "Read two sentences below and choose the best way of combining them.",
+            ("2-в", 33): "Read the sentence below, then choose the best answer to the question.",
+            ("2-в", 38): "Choose the appropriate answer",
+            ("2-в", 41): "Read some texts and find the right answers",
+            ("2-в", 30): "Read two sentences below and choose the best way of combining them.",
+        }
+        for (code, position), instruction in expected.items():
+            variant = Variant.query.filter_by(code=code).one()
+            question = Question.query.filter_by(variant_id=variant.id, position=position).one()
+            assert question.instruction == instruction, f"{code} №{position}"
+
+
+def test_corrections_from_methodologist(app):
+    """Правки приёмной комиссии от 24.08.2026 применены к банку вопросов."""
+    with app.app_context():
+        from app.models import Question
+
+        v1 = Variant.query.filter_by(code="1-в").one()
+        v2 = Variant.query.filter_by(code="2-в").one()
+
+        def q(variant, position):
+            return Question.query.filter_by(variant_id=variant.id, position=position).one()
+
+        assert q(v1, 18).correct_letter == "D"                       # «So do I»
+        assert q(v2, 3).correct_letter == "C"                        # «Isn’t going to»
+        assert q(v2, 6).prompt.endswith("some food.")                # добавлено «food»
+        assert "Have you ever visited" in q(v2, 8).prompt            # добавлено «ever»
+        assert q(v2, 21).correct_letter == "C"                       # «Should»
+        # вопрос «she ___ from her job yesterday» убран из варианта 2-в
+        assert v2.question_count == 50
+        prompts = " ".join(question.prompt for question in v2.questions)
+        assert "from her job yesterday" not in prompts
+        # нумерация осталась непрерывной 1..50
+        assert [question.position for question in v2.questions] == list(range(1, 51))
 
 
 def test_start_page(client):

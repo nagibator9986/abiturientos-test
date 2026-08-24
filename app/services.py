@@ -262,6 +262,7 @@ def sync_variants(data_dir: Path, verbose: bool = False, force: bool = False) ->
                         continue
                 stats["updated"] += 1
             question.section = item.get("section", "")
+            question.instruction = item.get("instruction") or None
             question.passage = item.get("passage") or None
             question.prompt = item["prompt"]
             db.session.flush()
@@ -310,25 +311,34 @@ def ensure_schema() -> list[str]:
 
     added: list[str] = []
     inspector = inspect(db.engine)
-    if "attempts" not in inspector.get_table_names():
-        return added
+    tables = set(inspector.get_table_names())
 
-    existing = {column["name"] for column in inspector.get_columns("attempts")}
-    missing = {
-        "search_text": "VARCHAR(700) NOT NULL DEFAULT ''",
-        "school": "VARCHAR(200) DEFAULT ''",
-        "last_activity_at": "DATETIME",
+    expected = {
+        "attempts": {
+            "search_text": "VARCHAR(700) NOT NULL DEFAULT ''",
+            "school": "VARCHAR(200) DEFAULT ''",
+            "last_activity_at": "DATETIME",
+        },
+        "questions": {
+            "instruction": "TEXT",
+        },
     }
-    for name, ddl in missing.items():
-        if name not in existing:
-            db.session.execute(text(f"ALTER TABLE attempts ADD COLUMN {name} {ddl}"))
-            added.append(name)
+
+    for table, columns in expected.items():
+        if table not in tables:
+            continue
+        existing = {column["name"] for column in inspector.get_columns(table)}
+        for name, ddl in columns.items():
+            if name not in existing:
+                db.session.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
+                added.append(f"{table}.{name}")
 
     if added:
         db.session.commit()
-        for attempt in Attempt.query.all():
-            attempt.refresh_search_text()
-        db.session.commit()
+        if any(name.startswith("attempts.") for name in added):
+            for attempt in Attempt.query.all():
+                attempt.refresh_search_text()
+            db.session.commit()
     return added
 
 

@@ -76,11 +76,26 @@ python3 run.py
 | Вариант | Файл данных | Вопросов | Разделы |
 |---|---|---|---|
 | 1-в | `data/variant_1.json` | 50 | Grammar & Vocabulary (1–30), Reading & Comprehension (31–50) |
-| 2-в | `data/variant_2.json` | 51 | Grammar & Vocabulary (1–30), Reading & Comprehension (31–51) |
+| 2-в | `data/variant_2.json` | 50 | Grammar & Vocabulary (1–29), Reading & Comprehension (30–50) |
 
-> В исходном файле варианта 2-в номер «34» использован дважды (два разных вопроса),
-> поэтому вопросов фактически 51; в платформе они пронумерованы подряд 1–51.
-> Ни один вопрос не потерян и не добавлен.
+### Правки приёмной комиссии (24.08.2026)
+
+Внесены по документу `Entrance test 2-в.docx` и замечаниям к варианту 1-в:
+
+| Вариант | № | Правка |
+|---|---|---|
+| 2-в | 3 | ключ подтверждён: **C** «Isn’t going to» |
+| 2-в | 6 | добавлено слово: «I went to the shop ________ some **food**.» |
+| 2-в | 8 | добавлено слово: «Have you **ever** visited London?» |
+| 2-в | 21 | ключ изменён на **C** «Should» (было D «Had») |
+| 2-в | 30 | вопрос «she ________ from her job yesterday» убран; вопросы 31–51 перенумерованы в 30–50 |
+| 2-в | 30–32, 33–37, 38–40, 41–45 | добавлены описания заданий |
+| 1-в | 18 | ключ подтверждён: **D** «So do I» |
+| 1-в | 31–35, 41–45, 46–48, 49–50 | добавлены описания заданий |
+
+Описание задания («Choose the appropriate answer», «Read some texts and find the right
+answers» и т. п.) хранится в поле `instruction` и показывается над текстом вопроса —
+и абитуриенту, и в админ-панели.
 
 **Ключ ответов.** В исходных документах правильные ответы отсутствовали — ключ составлен
 и проверен отдельно: каждый вопрос независимо решался тремя экспертными проходами
@@ -94,6 +109,7 @@ python3 run.py
 {
   "n": 7,
   "section": "Grammar & Vocabulary",
+  "instruction": "необязательное описание задания",
   "passage": "необязательный текст для чтения",
   "prompt": "When I was a student I ______ to discos every Friday night.",
   "options": {"A": "used to go", "B": "was used to go", "C": "use to went", "D": "used to going"},
@@ -139,7 +155,7 @@ test-for-abituients/
 ├── docs/                      извлечённый текст исходных .docx
 ├── *.docx                     исходные документы приёмной комиссии
 ├── tailwind/input.css, tailwind.config.js  исходники стилей
-├── tests/test_platform.py     19 сквозных тестов
+├── tests/test_platform.py     31 сквозной тест
 └── instance/testing.db        база SQLite (создаётся автоматически)
 ```
 
@@ -193,7 +209,7 @@ python3 -m flask --app run demo-data 30         # 30 демонстрацион�
 python3 -m flask --app run reset-attempts       # очистить все результаты
 python3 -m flask --app run stats                # краткая сводка
 
-python3 -m pytest tests/ -q                     # тесты (29 шт.)
+python3 -m pytest tests/ -q                     # тесты (31 шт.)
 
 # пересборка стилей после правки шаблонов
 npx tailwindcss@3.4.17 -c tailwind.config.js -i tailwind/input.css -o app/static/css/app.css --minify

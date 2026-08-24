@@ -62,6 +62,9 @@
                 </span>
               {% endif %}
             </div>
+            {% if question.instruction %}
+              <p class="mt-2 text-xs font-semibold italic text-brand-700">{{ question.instruction }}</p>
+            {% endif %}
             {% if question.passage %}
               <p class="mt-2 rounded-lg border-l-4 border-slate-200 bg-slate-50 px-3 py-2 text-xs italic text-slate-600">{{ question.passage }}</p>
             {% endif %}

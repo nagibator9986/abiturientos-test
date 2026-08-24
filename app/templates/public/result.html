@@ -127,6 +127,9 @@
                 {{ question.position }}
               </span>
               <div class="min-w-0 flex-1">
+                {% if question.instruction %}
+                  <p class="text-xs font-medium italic text-brand-700">{{ question.instruction }}</p>
+                {% endif %}
                 <p class="text-sm text-slate-900">{{ question.prompt }}</p>
                 <p class="mt-1 text-xs">
                   <span class="text-slate-500">Ваш ответ:</span>
