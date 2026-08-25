@@ -75,7 +75,7 @@ def test_bank_loaded(app):
     with app.app_context():
         variants = Variant.query.order_by(Variant.code).all()
         assert [v.code for v in variants] == ["1-в", "2-в"]
-        assert [v.question_count for v in variants] == [50, 49]
+        assert [v.question_count for v in variants] == [50, 50]
         for variant in variants:
             for question in variant.questions:
                 assert len(question.options) >= 3
@@ -92,10 +92,10 @@ def test_instructions_are_loaded(app):
             ("1-в", 46): "Choose the appropriate answer",
             ("1-в", 31): "Read some texts and find the right answers",
             ("1-в", 49): "Read two sentences below and choose the best way of combining them.",
-            ("2-в", 32): "Read the sentence below, then choose the best answer to the question.",
-            ("2-в", 37): "Choose the appropriate answer",
-            ("2-в", 40): "Read some texts and find the right answers",
-            ("2-в", 29): "Read two sentences below and choose the best way of combining them.",
+            ("2-в", 33): "Read the sentence below, then choose the best answer to the question.",
+            ("2-в", 38): "Choose the appropriate answer",
+            ("2-в", 41): "Read some texts and find the right answers",
+            ("2-в", 30): "Read two sentences below and choose the best way of combining them.",
         }
         for (code, position), instruction in expected.items():
             variant = Variant.query.filter_by(code=code).one()
@@ -118,14 +118,15 @@ def test_corrections_from_methodologist(app):
         assert q(v2, 3).correct_letter == "C"                        # «Isn’t going to»
         assert q(v2, 6).prompt.endswith("some food.")                # добавлено «food»
         assert "Have you ever visited" in q(v2, 8).prompt            # добавлено «ever»
-        # из варианта 2-в убраны два вопроса: «she ___ from her job yesterday»
-        # и спорный «You ___ better see a doctor»
-        assert v2.question_count == 49
+        # из варианта 2-в убран только спорный вопрос «You ___ better see a doctor»;
+        # вопрос «she ___ from her job yesterday» оставлен в тесте
+        assert v2.question_count == 50
         prompts = " ".join(question.prompt for question in v2.questions)
-        assert "from her job yesterday" not in prompts
         assert "better see a doctor" not in prompts
-        # нумерация осталась непрерывной 1..49
-        assert [question.position for question in v2.questions] == list(range(1, 50))
+        assert q(v2, 29).prompt.endswith("from her job yesterday.")
+        assert q(v2, 29).correct_letter == "B"                       # «Resigned»
+        # нумерация осталась непрерывной 1..50
+        assert [question.position for question in v2.questions] == list(range(1, 51))
 
 
 def test_start_page(client):

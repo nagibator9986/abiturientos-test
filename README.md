@@ -76,7 +76,7 @@ python3 run.py
 | Вариант | Файл данных | Вопросов | Разделы |
 |---|---|---|---|
 | 1-в | `data/variant_1.json` | 50 | Grammar & Vocabulary (1–30), Reading & Comprehension (31–50) |
-| 2-в | `data/variant_2.json` | 49 | Grammar & Vocabulary (1–28), Reading & Comprehension (29–49) |
+| 2-в | `data/variant_2.json` | 50 | Grammar & Vocabulary (1–29), Reading & Comprehension (30–50) |
 
 ### Правки приёмной комиссии (24.08.2026)
 
@@ -87,10 +87,9 @@ python3 run.py
 | 2-в | 3 | ключ подтверждён: **C** «Isn’t going to» |
 | 2-в | 6 | добавлено слово: «I went to the shop ________ some **food**.» |
 | 2-в | 8 | добавлено слово: «Have you **ever** visited London?» |
-| 2-в | 21 | вопрос «You ________ better see a doctor» убран из теста |
-| 2-в | 30 | вопрос «she ________ from her job yesterday» убран из теста |
-| 2-в | — | после удалений вопросы перенумерованы, в варианте 49 вопросов |
-| 2-в | 29–31, 32–36, 37–39, 40–44 | добавлены описания заданий |
+| 2-в | 21 | вопрос «You ________ better see a doctor» убран из теста (спорный ключ) |
+| 2-в | — | после удаления вопросы перенумерованы, в варианте 50 вопросов |
+| 2-в | 30–32, 33–37, 38–40, 41–45 | добавлены описания заданий |
 | 1-в | 18 | ключ подтверждён: **D** «So do I» |
 | 1-в | 31–35, 41–45, 46–48, 49–50 | добавлены описания заданий |
 
@@ -113,7 +112,7 @@ answers» и т. п.) хранится в поле `instruction` и показы
 | 1-в №22 «Many children are ___ by a single parent» | grown up | **brought up** | `bring up` = воспитывать, имеет пассив; `grow up` непереходный — «be grown up by» невозможно |
 | 1-в №23 «After the plane has ___ off» | flown | **taken** | `take off` = взлетать; `fly off` о самолёте в этом значении не употребляется |
 | 1-в №26 «Could you pull down the ___» | curtains | **blind** | опускают жалюзи (`pull down the blind`); шторы задёргивают (`draw the curtains`) |
-| 1-в №41, 2-в №32 «tomato much bigger than **all** the others» | larger than some | **the largest** | «больше всех остальных» = самый большой; «larger than some» — заведомо слабый дистрактор |
+| 1-в №41, 2-в №33 «tomato much bigger than **all** the others» | larger than some | **the largest** | «больше всех остальных» = самый большой; «larger than some» — заведомо слабый дистрактор |
 
 Решение по этим четырём позициям — за приёмной комиссией; сейчас в тесте стоят
 проверенные варианты из правой колонки.
